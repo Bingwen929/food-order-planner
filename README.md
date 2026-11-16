@@ -19,6 +19,29 @@ on a results page where you can keep asking follow-up questions.
 5. The workflow's markdown reply is parsed (`src/lib/planner-response.ts`) and rendered with
    its bold section headings separated out. Follow-up messages reuse the same session.
 
+## Backend: the n8n workflow
+
+This site has no database and no application server of its own. All of the food sourcing logic
+lives in the n8n workflow `AI Food Order Optimizer`, and the site calls it over its chat webhook.
+`AI Food Order Optimizer.json` is an export of that workflow, kept in the repo so the backend can
+be reviewed and versioned alongside the front end. The app does not read the file at runtime, so
+editing it changes nothing until the workflow is imported and published in n8n again.
+
+What the workflow does with each request:
+
+1. **Chat Trigger** starts a session, then an agent extracts a structured pizza request (address,
+   headcount, budget, preferences) and a code node validates it. Incomplete requests are answered
+   with a question about the missing details, using conversation memory to keep context.
+2. **Menu search** looks up pizza stores near the address on DoorDash and Uber Eats through
+   `api.api.sh`, ranks them, and fetches menus for the top pick per platform.
+3. **Cache** stores normalized menus in the `food_menu_cache` n8n data table, keyed by the
+   street address, so repeat searches in the same area skip the lookups. A one-off setup branch in
+   the workflow creates that table.
+4. **Optimization** picks combinations of items that feed the headcount within the total budget and
+   formats them as a markdown reply with bold section headings, which the site then renders.
+5. **Demo fallback** returns mock menu data when live search finds nothing, and prefixes the reply
+   with `DEMO MODE:`. The site uses that marker to label the results as fictional.
+
 ## Form fields
 
 | Field | Required | Notes |
@@ -40,7 +63,7 @@ on a results page where you can keep asking follow-up questions.
 - Tailwind CSS v4 with shadcn/ui components (Radix primitives)
 - zod for form and response validation
 - Vitest and Testing Library for tests
-- n8n workflow `AI Food Order Optimizer` (exported in `AI Food Order Optimizer.json`)
+- Backend: the `AI Food Order Optimizer` n8n workflow, exported in `AI Food Order Optimizer.json`
 
 ## Getting started
 
@@ -92,15 +115,17 @@ src/
   lib/planner.functions.ts    server function that calls the n8n webhook
   lib/planner-response.ts     response parsing, including demo-mode detection
   test/                       routing, schema and response parsing tests
-AI Food Order Optimizer.json  exported n8n workflow
+AI Food Order Optimizer.json  export of the n8n backend workflow
 roadmap.md                    work completed so far
 .lovable/                     Lovable project metadata and product north star
 ```
 
 ## Notes
 
-- Recommendations come from live web search inside the workflow, so prices and availability are
-  estimates, not confirmed quotes.
+- The deployed n8n workflow is the source of truth. The JSON in this repo is a snapshot, so pull a
+  fresh export after editing the workflow in n8n.
+- Recommendations come from live delivery-app searches inside the workflow, so prices and
+  availability are estimates, not confirmed quotes.
 - Replies that start with a `DEMO MODE:` marker are flagged as fictional in the UI and the marker
   is stripped from the rendered text.
 - The app was scaffolded and is maintained with [Lovable](https://lovable.dev). Editing the
