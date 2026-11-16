@@ -1,0 +1,11 @@
+# n8n alignment
+- [x] Match the published workflow’s structured webhook response and preserve conversation sessions.
+- [x] Show budget guidance and clearly identify fictional recommendations.
+- [x] Test parsing and verify a real form submission and follow-up.
+- [x] Remove dietary questions and exclude dietary restrictions from event requests.
+- [x] Require cuisine and budget throughout the website.
+- [x] Connect the website to the published AI Pizza Order Optimizer Final chat workflow.
+- [x] Replace cuisine selection with optional pizza preferences and remove obsolete budget minimums.
+- [x] Update response details and tests for the improved pizza workflow.
+- [x] Verify a complete pizza search and follow-up in the preview.
+- [x] Confirm the improved published workflow and use the corrected AI Pizza Order Optimizer Final name in the project.
